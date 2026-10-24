@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { sopPaletteOf } from "@/lib/sop/palette";
 import { FitToWidth } from "./FitToWidth";
 import type { TimeText } from "@/lib/sop/timeText";
 import type { DessertExtras } from "@/lib/sop/dessert";
@@ -149,36 +150,38 @@ export function RecipeSopView({
   const docId = `${data.dishCode || "N/A"}-v${data.versionLabel}`;
   // Mise en place / equipment are skipped only when the SOP has neither (the column then holds the notes).
   const hasPrep = data.miseEnPlace.length > 0 || data.equipment.length > 0 || !data.notes || editable;
+  // A step with a title starts a new method section; numbering restarts.
+  const stepNumbers = data.steps.reduce<number[]>((nums, s, i) => [...nums, s.title || i === 0 ? 1 : nums[i - 1] + 1], []);
   const yieldText = data.yieldText ? (data.yieldText.includes("\n") ? data.yieldText : data.yieldText.replace(" ", "\n")) : "N/A";
 
   // Same measurements as the A4 SOP card in lib/recipe-print.ts.
-  const h3 = "text-[10.5px] font-bold uppercase tracking-[.14em] text-[#1F3D2D] border-b border-[#D4B572] pb-1 mb-[7px]";
+  const h3 = "text-[10.5px] font-bold uppercase tracking-[.14em] text-(--sop-ink) border-b border-[#D4B572] pb-1 mb-1.75";
   const metaRow = "grid grid-cols-[42%_1fr] py-[3.5px] border-b border-[#E6E1DA]";
-  const metaLabel = "font-bold uppercase text-[#1F3D2D]";
+  const metaLabel = "font-bold uppercase text-(--sop-ink)";
   const stat = "col-span-2 flex flex-col items-center gap-0.5 px-1";
-  const statIcon = "h-[22px] w-[22px]";
+  const statIcon = "h-5.5 w-5.5";
   const statLabel = "mt-0.5 text-[9.5px] font-bold uppercase tracking-[.14em]";
   const statValue = "text-[11px] leading-[1.3] text-gray-600 whitespace-pre-line";
-  const gbRow = "flex gap-3 py-[7px]";
-  const gbIcon = "mt-0.5 h-6 w-6 shrink-0 text-[#D4B572]";
-  const gbTitle = "mb-[3px] text-[10.5px] font-bold uppercase tracking-[.14em] text-[#D4B572]";
+  const gbRow = "flex gap-3 py-1.75";
+  const gbIcon = "mt-0.5 h-6 w-6 shrink-0 text-(--sop-on-ink)";
+  const gbTitle = "mb-0.75 text-[10.5px] font-bold uppercase tracking-[.14em] text-(--sop-on-ink)";
   const gbText = "text-[11.5px] leading-normal whitespace-pre-line";
-  const bullets = "list-disc pl-[15px] text-[11.5px] leading-[1.55]";
-  const bodyCol = "min-w-0 border-l border-[#E6D6B0] pl-[19px]";
+  const bullets = "list-disc pl-3.75 text-[11.5px] leading-[1.55]";
+  const bodyCol = "min-w-0 border-l border-[#E6D6B0] pl-4.75";
 
   return (
-    <div className="mx-auto w-full max-w-[1000px] px-3 py-4 sm:px-6 sm:py-8 print:max-w-none print:p-0 print:flex-1">
+    <div className="mx-auto w-full max-w-250 px-3 py-4 sm:px-6 sm:py-8 print:max-w-none print:p-0 print:flex-1">
       {(topSlot || headerAction) && (
-        <div className="mx-auto mb-3 flex max-w-[794px] flex-wrap items-center justify-between gap-3 print:hidden">
+        <div className="mx-auto mb-3 flex max-w-198.5 flex-wrap items-center justify-between gap-3 print:hidden">
           <div>{topSlot}</div>
           {headerAction}
         </div>
       )}
 
       <FitToWidth width={CARD_WIDTH}>
-        <div className="flex min-h-[1123px] flex-col gap-[17px] bg-[#FAF8F5] px-[38px] pb-[30px] pt-[34px] text-[#2C3E35] shadow-[0_6px_24px_rgba(0,0,0,.12)] print:shadow-none">
+        <div style={sopPaletteOf(data.brandName) as CSSProperties} className="flex min-h-280.75 flex-col gap-4.25 bg-[#FAF8F5] px-9.5 pb-7.5 pt-8.5 text-[#2C3E35] shadow-[0_6px_24px_rgba(0,0,0,.12)] print:shadow-none">
           {/* Top: intro + photo / green box */}
-          <div className="grid grid-cols-[40%_1fr] gap-[23px]">
+          <div className="grid grid-cols-[40%_1fr] gap-5.75">
             <div className="min-w-0">
               <div className="border-b border-[#D4B572] pb-1.5 text-[11px] font-bold uppercase tracking-[.16em] text-[#C9A45C]">
                 <span {...f("categoryId")}>{data.categoryName || "Recipe"}</span>
@@ -189,7 +192,7 @@ export function RecipeSopView({
                   </>
                 )}
               </div>
-              <h1 {...f("title")} className="mb-2 mt-2.5 break-words font-[family-name:var(--font-playfair)] text-[34px] font-bold leading-[1.05] text-[#1F3D2D]">
+              <h1 {...f("title")} className="mb-2 mt-2.5 wrap-break-word font-(family-name:--sop-title-font) text-[34px] font-(--sop-title-weight,700) tracking-(--sop-title-spacing) [-webkit-text-stroke:var(--sop-title-stroke,0)] leading-[1.05] text-(--sop-ink)">
                 {data.title || "Untitled recipe"}
               </h1>
               {(data.description || editable) && (
@@ -204,10 +207,10 @@ export function RecipeSopView({
                 <div {...f("author")} className={metaRow}><span className={metaLabel}>Author:</span><span>{data.author || data.brandName}</span></div>
                 <div {...f("approvedBy")} className={metaRow}><span className={metaLabel}>Approved by:</span><span>{data.approvedBy || "N/A"}</span></div>
                 <div {...f("effectiveDate")} className={metaRow}><span className={metaLabel}>Effective:</span><span>{formatSopDate(data.effectiveDate)}</span></div>
-                <div {...f("nextReviewDate")} className={`${metaRow} !border-[#D4B572]`}><span className={metaLabel}>Next review:</span><span>{formatSopDate(data.nextReviewDate)}</span></div>
+                <div {...f("nextReviewDate")} className={`${metaRow} border-[#D4B572]!`}><span className={metaLabel}>Next review:</span><span>{formatSopDate(data.nextReviewDate)}</span></div>
               </div>
 
-              <div className="grid grid-cols-6 gap-y-2 border-b border-[#D4B572] py-2.5 text-center text-[#1F3D2D]">
+              <div className="grid grid-cols-6 gap-y-2 border-b border-[#D4B572] py-2.5 text-center text-(--sop-ink)">
                 {data.dessert?.stats ? (
                   data.dessert.stats.map((s, i, all) => {
                     const Icon = { tag: KnifeIcon, pot: PotIcon, user: ScaleIcon, leaf: LeafIcon, snow: ClockIcon, clock: ClockIcon, cup: ScaleIcon, ice: ScaleIcon }[s.icon];
@@ -254,18 +257,18 @@ export function RecipeSopView({
               </div>
 
               {(data.summary || editable) && (
-                <p {...f("summary")} className={`mt-[9px] font-[family-name:var(--font-playfair)] text-[12.5px] italic leading-normal text-[#1F3D2D] ${data.summary ? "" : "opacity-40"}`}>
+                <p {...f("summary")} className={`mt-2.25 font-(family-name:--font-playfair) text-[12.5px] italic leading-normal text-(--sop-ink) ${data.summary ? "" : "opacity-40"}`}>
                   {data.summary ? <>&ldquo;{data.summary}&rdquo;</> : "Add a summary…"}
                 </p>
               )}
             </div>
 
-            <div className="flex min-w-0 flex-col gap-[13px]">
-              <div {...f("heroImageId")} className="relative h-[295px] w-full overflow-hidden rounded-[14px] bg-[#1a1a1a]">
+            <div className="flex min-w-0 flex-col gap-3.25">
+              <div {...f("heroImageId")} className="relative h-73.75 w-full overflow-hidden rounded-[14px] bg-[#1a1a1a]">
                 {hero}
               </div>
 
-              <div className="flex flex-col rounded-[14px] bg-[#1F3D2D] px-[23px] py-[19px] text-white print:!bg-[#1F3D2D]">
+              <div className="flex flex-col rounded-[14px] bg-(--sop-ink) px-5.75 py-4.75 text-white print:bg-(--sop-ink)!">
                 <div {...f("plating")} className={gbRow}>
                   <BowlIcon className={gbIcon} />
                   <div>
@@ -273,14 +276,14 @@ export function RecipeSopView({
                     <p className={gbText}>{data.plating || "N/A"}</p>
                   </div>
                 </div>
-                <div {...f("holding")} className={`${gbRow} border-t border-[#D4B572]/35`}>
+                <div {...f("holding")} className={`${gbRow} border-t border-[color-mix(in_srgb,var(--sop-on-ink)_35%,transparent)]`}>
                   <CoverIcon className={gbIcon} />
                   <div>
                     <h4 className={gbTitle}>Holding &amp; Shelf Life</h4>
                     <p className={gbText}>{data.holding || "N/A"}</p>
                   </div>
                 </div>
-                <div {...f("allergens")} className={`${gbRow} border-t border-[#D4B572]/35`}>
+                <div {...f("allergens")} className={`${gbRow} border-t border-[color-mix(in_srgb,var(--sop-on-ink)_35%,transparent)]`}>
                   <WheatIcon className={gbIcon} />
                   <div>
                     <h4 className={gbTitle}>Allergens</h4>
@@ -292,7 +295,7 @@ export function RecipeSopView({
           </div>
 
           {/* Body: prep lists / notes | ingredients | method */}
-          <div className="grid grid-cols-[27%_1fr_1.15fr] gap-[23px]">
+          <div className="grid grid-cols-[27%_1fr_1.15fr] gap-5.75">
             <div className="min-w-0">
               {hasPrep && (
                 <>
@@ -301,7 +304,7 @@ export function RecipeSopView({
                     {data.miseEnPlace.length > 0
                       ? data.miseEnPlace.map((m, i) =>
                           m.startsWith("# ")
-                            ? <li key={i} {...f(`miseEnPlace.${i}`)} className="!list-none !-ml-[15px] mt-1 font-bold uppercase text-[#1F3D2D]">{m.slice(2)}</li>
+                            ? <li key={i} {...f(`miseEnPlace.${i}`)} className="list-none! -ml-3.75! mt-1 font-bold uppercase text-(--sop-ink)">{m.slice(2)}</li>
                             : <li key={i} {...f(`miseEnPlace.${i}`)}>{m}</li>,
                         )
                       : <li {...f("miseEnPlace")}>None</li>}
@@ -328,11 +331,11 @@ export function RecipeSopView({
                 {data.ingredients.map((ing, i) => (
                   <div key={i}>
                     {ing.groupLabel && ing.groupLabel !== data.ingredients[i - 1]?.groupLabel && (
-                      <p className="mb-0.5 mt-[7px] font-bold text-[#1F3D2D]">{ing.groupLabel}</p>
+                      <p className="mb-0.5 mt-1.75 font-bold text-(--sop-ink)">{ing.groupLabel}</p>
                     )}
                     <div {...f(`ingredients.${i}`)} className="flex items-baseline gap-1 py-[1.5px]">
                       <span className="min-w-0">{ing.name}</span>
-                      <i className="min-w-2 flex-1 -translate-y-[3px] border-b-[1.5px] border-dotted border-[#BDBDBD]" />
+                      <i className="min-w-2 flex-1 -translate-y-0.75 border-b-[1.5px] border-dotted border-[#BDBDBD]" />
                       <span className="whitespace-nowrap text-right">{ing.quantity ? Number(ing.quantity) : ""} {ing.unit}</span>
                     </div>
                   </div>
@@ -343,23 +346,18 @@ export function RecipeSopView({
             <div className={bodyCol}>
               <h3 {...f("steps")} className={h3}>Method</h3>
               <ol className="text-[11.5px] leading-[1.45]">
-                {(() => {
-                  let n = 0;
-                  return data.steps.map(({ title, body }, idx) => {
-                    // A step with a title starts a new method section; numbering restarts.
-                    if (title) n = 0;
-                    n += 1;
-                    return (
-                      <li key={idx} {...f(`steps.${idx}`)} className="mb-1.5 list-none">
-                        {title && <p className="mb-1 mt-2 text-[10.5px] font-bold uppercase tracking-[.08em] text-[#1F3D2D] first:mt-0">{title}</p>}
-                        <div className="flex items-start gap-2">
-                          <span className="mt-px inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-[#1F3D2D] text-[10px] font-bold text-white print:!bg-[#1F3D2D]">{n}</span>
-                          <span>{body}</span>
-                        </div>
-                      </li>
-                    );
-                  });
-                })()}
+                {data.steps.map(({ title, body }, idx) => {
+                  const n = stepNumbers[idx];
+                  return (
+                    <li key={idx} {...f(`steps.${idx}`)} className="mb-1.5 list-none">
+                      {title && <p className="mb-1 mt-2 text-[10.5px] font-bold uppercase tracking-[.08em] text-(--sop-ink) first:mt-0">{title}</p>}
+                      <div className="flex items-start gap-2">
+                        <span className="mt-px inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-(--sop-ink) text-[10px] font-bold text-white print:bg-(--sop-ink)!">{n}</span>
+                        <span>{body}</span>
+                      </div>
+                    </li>
+                  );
+                })}
               </ol>
 
               {data.garnish && data.garnish.length > 0 && (
@@ -390,15 +388,15 @@ export function RecipeSopView({
           </div>
 
           {/* Footer */}
-          <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3.5 gap-y-1 rounded-[10px] bg-[#1F3D2D] px-[19px] py-[11px] text-[10px] font-medium text-white print:!bg-[#1F3D2D]">
+          <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3.5 gap-y-1 rounded-[10px] bg-(--sop-ink) px-4.75 py-2.75 text-[10px] font-medium text-white print:bg-(--sop-ink)!">
             <div {...f("dishCode")} className="inline-flex items-center gap-1.5">
-              <ClipboardIcon className="h-4 w-4 text-[#D4B572]" />
+              <ClipboardIcon className="h-4 w-4 text-(--sop-on-ink)" />
               <span>Document ID: {docId}</span>
             </div>
             <span {...f("effectiveDate")}>Effective: {formatSopDate(data.effectiveDate)}</span>
             <span {...f("nextReviewDate")}>Next review: {formatSopDate(data.nextReviewDate)}</span>
             <span>Page 1 of 1</span>
-            <div {...f("brandId")} className="font-[family-name:var(--font-playfair)] text-[13px] font-bold text-[#D4B572]">{data.brandName} Hospitality</div>
+            <div {...f("brandId")} className="font-(family-name:--font-playfair) text-[13px] font-bold text-(--sop-on-ink)">{data.brandName} Hospitality</div>
           </div>
         </div>
       </FitToWidth>

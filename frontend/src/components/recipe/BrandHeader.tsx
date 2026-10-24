@@ -41,7 +41,7 @@ export function BrandHeader({ brand, base = "" }: { brand: Brand; base?: string 
           ) : (
             <span
               className={`text-2xl sm:text-3xl font-bold ${
-                brand.slug === "aiko" ? "font-[family-name:var(--font-marker)] tracking-wide" : "tracking-tight"
+                brand.slug === "aiko" ? "font-marker tracking-wide" : "tracking-tight"
               }`}
               style={{
                 color: brand.slug === "aiko" ? "var(--brand-bg, #EFB22C)" : "var(--brand-fg, #ffffff)",

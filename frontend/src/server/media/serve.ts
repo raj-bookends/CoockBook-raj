@@ -43,6 +43,50 @@ async function isPublicMedia(mediaId: string): Promise<boolean> {
   return !!hit;
 }
 
+// Per-instance caches, so a warm function answers repeat requests (CDN misses in
+// another region, after a deploy) without the access query, storage fetch and decrypt.
+// Only PUBLIC results are kept; a recipe unpublished later stops being served from
+// here once its entry expires.
+const PUBLIC_TTL_MS = 5 * 60_000;
+const FILE_CACHE_MAX_BYTES = 64 * 1024 * 1024;
+const publicUntil = new Map<string, number>();
+const fileCache = new Map<string, { data: Buffer; contentType: string; until: number }>();
+let fileCacheBytes = 0;
+
+async function isPublicMediaCached(mediaId: string): Promise<boolean> {
+  const until = publicUntil.get(mediaId);
+  if (until && until > Date.now()) return true;
+  const ok = await isPublicMedia(mediaId);
+  if (ok) publicUntil.set(mediaId, Date.now() + PUBLIC_TTL_MS);
+  else publicUntil.delete(mediaId);
+  return ok;
+}
+
+function cachedFile(key: string): { data: Buffer; contentType: string } | null {
+  const hit = fileCache.get(key);
+  if (!hit) return null;
+  if (hit.until <= Date.now()) {
+    fileCache.delete(key);
+    fileCacheBytes -= hit.data.byteLength;
+    return null;
+  }
+  // Re-insert so the Map's order stays least-recently-used first.
+  fileCache.delete(key);
+  fileCache.set(key, hit);
+  return hit;
+}
+
+function cacheFile(key: string, file: { data: Buffer; contentType: string }) {
+  if (file.data.byteLength > FILE_CACHE_MAX_BYTES / 8 || fileCache.has(key)) return;
+  fileCache.set(key, { ...file, until: Date.now() + PUBLIC_TTL_MS });
+  fileCacheBytes += file.data.byteLength;
+  for (const [k, v] of fileCache) {
+    if (fileCacheBytes <= FILE_CACHE_MAX_BYTES) break;
+    fileCache.delete(k);
+    fileCacheBytes -= v.data.byteLength;
+  }
+}
+
 const notFound = () => new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
 
 export async function serveMedia(segments: string[]): Promise<Response> {
@@ -50,6 +94,10 @@ export async function serveMedia(segments: string[]): Promise<Response> {
     return notFound();
   }
   const mediaId = segments[0];
+  const key = `media/${segments.join("/")}`;
+
+  const warm = cachedFile(key);
+  if (warm && (await isPublicMediaCached(mediaId))) return fileResponse(warm, true);
 
   // The file is fetched from storage WHILE the access check runs (they are
   // independent round trips), but it is only returned once the check passes.
@@ -62,14 +110,13 @@ export async function serveMedia(segments: string[]): Promise<Response> {
   })();
   filePromise.catch(() => {}); // handled below; avoids an unhandled rejection when access is denied
 
-  const isPublic = await isPublicMedia(mediaId);
+  const isPublic = await isPublicMediaCached(mediaId);
   if (!isPublic) {
     // Not part of published content: only a signed-in admin may see it (drafts, library previews).
     const admin = await getCurrentAdmin().catch(() => null);
     if (!admin) return notFound();
   }
 
-  const key = `media/${segments.join("/")}`;
   let file: { data: Buffer; contentType: string } | null = null;
   try {
     file = await filePromise;
@@ -84,7 +131,11 @@ export async function serveMedia(segments: string[]): Promise<Response> {
     if (data) file = { data, contentType: EXT_TYPES[key.slice(key.lastIndexOf(".")).toLowerCase()] ?? "application/octet-stream" };
   }
   if (!file) return notFound();
+  if (isPublic) cacheFile(key, file);
+  return fileResponse(file, isPublic);
+}
 
+function fileResponse(file: { data: Buffer; contentType: string }, isPublic: boolean): Response {
   return new Response(new Uint8Array(file.data), {
     headers: {
       "Content-Type": file.contentType,

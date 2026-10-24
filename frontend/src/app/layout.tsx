@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, JetBrains_Mono, Source_Serif_4, Caveat, Kalam, Playfair_Display } from "next/font/google";
+import { Space_Grotesk, JetBrains_Mono, Source_Serif_4, Caveat, Kalam, Playfair_Display, Marcellus_SC } from "next/font/google";
 import "./globals.css";
 import { SuppressWarnings } from "@/components/utils/SuppressWarnings";
 
@@ -12,6 +12,8 @@ const sourceSerif = Source_Serif_4({ variable: "--font-source-serif", subsets: [
 const caveat = Caveat({ variable: "--font-caveat", subsets: ["latin"], weight: "700" });
 const kalam = Kalam({ variable: "--font-kalam", subsets: ["latin"], weight: "700" });
 const playfair = Playfair_Display({ variable: "--font-playfair", subsets: ["latin"] });
+// Beshak recipe titles (lib/sop/palette.ts).
+const marcellusSc = Marcellus_SC({ variable: "--font-marcellus-sc", subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
   title: { default: "Bookends Hospitality", template: "%s | Bookends Hospitality" },
@@ -23,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${sourceSerif.variable} ${caveat.variable} ${kalam.variable} ${playfair.variable} h-full antialiased`}
+      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${sourceSerif.variable} ${caveat.variable} ${kalam.variable} ${playfair.variable} ${marcellusSc.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col">

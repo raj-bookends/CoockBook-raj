@@ -61,9 +61,9 @@ export function SopCard({
 }) {
   if (isDrinksStyle(template, data.categorySlug)) {
     return (
-      <div className="mx-auto w-full max-w-[1000px] px-3 py-4 sm:px-6 sm:py-8 print:max-w-none print:p-0">
+      <div className="mx-auto w-full max-w-250 px-3 py-4 sm:px-6 sm:py-8 print:max-w-none print:p-0">
         {(topSlot || headerAction) && (
-          <div className="mx-auto mb-3 flex max-w-[794px] flex-wrap items-center justify-between gap-3 print:hidden">
+          <div className="mx-auto mb-3 flex max-w-198.5 flex-wrap items-center justify-between gap-3 print:hidden">
             <div>{topSlot}</div>
             {headerAction}
           </div>
@@ -85,9 +85,9 @@ export function SopCard({
   }
   if (isDimsumStyle(template, data.categorySlug)) {
     return (
-      <div className="mx-auto w-full max-w-[1000px] px-3 py-4 sm:px-6 sm:py-8 print:max-w-none print:p-0">
+      <div className="mx-auto w-full max-w-250 px-3 py-4 sm:px-6 sm:py-8 print:max-w-none print:p-0">
         {(topSlot || headerAction) && (
-          <div className="mx-auto mb-3 flex max-w-[794px] flex-wrap items-center justify-between gap-3 print:hidden">
+          <div className="mx-auto mb-3 flex max-w-198.5 flex-wrap items-center justify-between gap-3 print:hidden">
             <div>{topSlot}</div>
             {headerAction}
           </div>
@@ -117,9 +117,9 @@ export function SopCard({
   }
   if (template === "aiko") {
     return (
-      <div className="mx-auto w-full max-w-[1000px] px-3 py-4 sm:px-6 sm:py-8 print:max-w-none print:p-0">
+      <div className="mx-auto w-full max-w-250 px-3 py-4 sm:px-6 sm:py-8 print:max-w-none print:p-0">
         {(topSlot || headerAction) && (
-          <div className="mx-auto mb-3 flex max-w-[794px] flex-wrap items-center justify-between gap-3 print:hidden">
+          <div className="mx-auto mb-3 flex max-w-198.5 flex-wrap items-center justify-between gap-3 print:hidden">
             <div>{topSlot}</div>
             {headerAction}
           </div>

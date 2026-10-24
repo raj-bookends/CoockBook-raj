@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { asVariants, buildSrcSet, largestVariantUrl, type MediaLike } from "@/lib/media";
 
 interface RecipeImageProps {
@@ -21,6 +21,11 @@ interface RecipeImageProps {
 export function RecipeImage({ media, alt, sizes = "100vw", priority = false, className = "", aspect = "4 / 3" }: RecipeImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
+  // An image that finished loading before React hydrated never fires onLoad for
+  // us, so check `complete` when the element mounts — otherwise it stays hidden.
+  const imgRef = useCallback((img: HTMLImageElement | null) => {
+    if (img?.complete && img.naturalWidth > 0) setLoaded(true);
+  }, []);
 
   const hasImage = !!media && asVariants(media.variants).length > 0 && !errored;
 
@@ -40,7 +45,7 @@ export function RecipeImage({ media, alt, sizes = "100vw", priority = false, cla
   const fallbackSrc = largestVariantUrl(media) ?? "";
 
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ aspectRatio: aspect }}>
+    <div className={`relative overflow-hidden ${className}`} style={{ aspectRatio: aspect, backgroundColor: media.dominantColor ?? undefined }}>
       {media.blurDataUrl && !loaded && (
         <img
           src={media.blurDataUrl}
@@ -53,6 +58,7 @@ export function RecipeImage({ media, alt, sizes = "100vw", priority = false, cla
         {avifSet && <source type="image/avif" srcSet={avifSet} sizes={sizes} />}
         {webpSet && <source type="image/webp" srcSet={webpSet} sizes={sizes} />}
         <img
+          ref={imgRef}
           src={fallbackSrc}
           alt={alt}
           loading={priority ? "eager" : "lazy"}
@@ -60,7 +66,7 @@ export function RecipeImage({ media, alt, sizes = "100vw", priority = false, cla
           decoding="async"
           onLoad={() => setLoaded(true)}
           onError={() => setErrored(true)}
-          className={`h-full w-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
+          className={`h-full w-full object-cover transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}
         />
       </picture>
     </div>

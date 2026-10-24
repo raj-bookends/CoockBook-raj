@@ -16,6 +16,7 @@ import { DRINK_CSS, drinkCardHtml, isDrinksStyle, type DrinkExtras } from "@/lib
 import { buildDessertSheet, DESSERT_CSS } from "@/lib/sop/dessert-print";
 import { AIKO_COOKBOOK_CSS, buildAikoCookbookFront, sortAikoRecipes } from "@/lib/sop/cookbook-aiko";
 import { buildCookbookFront, COOKBOOK_CSS, orderCookbookCategories, type CookbookCategory } from "@/lib/sop/cookbook";
+import { sopPaletteStyle } from "@/lib/sop/palette";
 import { AIKO_CSS, AIKO_FONTS_HREF, aikoCardHtml, aikoCoverHtml, type AikoOpts } from "@/lib/sop/aiko";
 
 export interface PrintRecipe {
@@ -237,37 +238,37 @@ body {
 
 h1, h3, h4, p { margin: 0; }
 h3 {
-  font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #1F3D2D;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--sop-ink);
   border-bottom: 1px solid #D4B572; padding-bottom: 4px; margin: 0 0 7px;
 }
 .col h3:not(:first-child) { margin-top: 12px; }
 
 .top { display: grid; grid-template-columns: 40% 1fr; gap: 6mm; }
 .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #C9A45C; padding-bottom: 6px; border-bottom: 1px solid #D4B572; }
-h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 700; font-size: 34px; line-height: 1.05; color: #1F3D2D; margin: 10px 0 8px; }
+h1 { font-family: var(--sop-title-font, "Playfair Display", Georgia, serif); font-weight: var(--sop-title-weight, 700); letter-spacing: var(--sop-title-spacing, normal); -webkit-text-stroke: var(--sop-title-stroke, 0); font-size: 34px; line-height: 1.05; color: var(--sop-ink); margin: 10px 0 8px; }
 .desc { font-size: 12px; line-height: 1.5; color: rgba(44,62,53,.85); }
 .meta { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; border-top: 1px solid #D4B572; }
-.meta th { text-align: left; font-weight: 700; text-transform: uppercase; width: 42%; padding: 3.5px 0; color: #1F3D2D; }
+.meta th { text-align: left; font-weight: 700; text-transform: uppercase; width: 42%; padding: 3.5px 0; color: var(--sop-ink); }
 .meta td { padding: 3.5px 0; }
 .meta tr { border-bottom: 1px solid #E6E1DA; }
 .meta tr:last-child { border-bottom-color: #D4B572; }
-.stats { display: grid; grid-template-columns: repeat(6, 1fr); row-gap: 8px; padding: 10px 0; border-bottom: 1px solid #D4B572; text-align: center; color: #1F3D2D; }
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); row-gap: 8px; padding: 10px 0; border-bottom: 1px solid #D4B572; text-align: center; color: var(--sop-ink); }
 .stat { grid-column: span 2; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 4px; }
 .stat:nth-child(2), .stat:nth-child(3), .stat:nth-child(5) { border-left: 1px solid #E6E1DA; }
 .stat:nth-child(4) { grid-column: 2 / span 2; }
 .stat svg { width: 22px; height: 22px; }
 .stat b { font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; margin-top: 2px; }
 .stat span { font-size: 11px; line-height: 1.3; color: #4B5563; white-space: pre-line; }
-.summary { font-family: "Playfair Display", Georgia, serif; font-style: italic; font-size: 12.5px; line-height: 1.5; color: #1F3D2D; margin-top: 9px; }
+.summary { font-family: "Playfair Display", Georgia, serif; font-style: italic; font-size: 12.5px; line-height: 1.5; color: var(--sop-ink); margin-top: 9px; }
 
 .visual { display: flex; flex-direction: column; gap: 3.5mm; }
 .photo { width: 100%; height: 78mm; border-radius: 14px; overflow: hidden; background: #1a1a1a; }
 .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.greenbox { background: #1F3D2D; color: #fff; border-radius: 14px; padding: 5mm 6mm; display: flex; flex-direction: column; }
+.greenbox { background: var(--sop-ink); color: #fff; border-radius: 14px; padding: 5mm 6mm; display: flex; flex-direction: column; }
 .gb-row { display: flex; gap: 12px; padding: 7px 0; }
-.gb-row + .gb-row { border-top: 1px solid rgba(212,181,114,.35); }
-.gb-row svg { width: 24px; height: 24px; color: #D4B572; flex-shrink: 0; margin-top: 2px; }
-.gb-row h4 { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #D4B572; margin-bottom: 3px; }
+.gb-row + .gb-row { border-top: 1px solid color-mix(in srgb, var(--sop-on-ink) 35%, transparent); }
+.gb-row svg { width: 24px; height: 24px; color: var(--sop-on-ink); flex-shrink: 0; margin-top: 2px; }
+.gb-row h4 { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--sop-on-ink); margin-bottom: 3px; }
 .gb-row p { font-size: 11.5px; line-height: 1.5; white-space: pre-line; }
 
 .body { display: grid; grid-template-columns: 27% 1fr 1.15fr; gap: 6mm; }
@@ -277,26 +278,26 @@ h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 700; font-siz
 .ing { display: flex; align-items: baseline; gap: 4px; padding: 1.5px 0; }
 .ing i { flex: 1; border-bottom: 1.5px dotted #BDBDBD; transform: translateY(-3px); min-width: 8px; }
 .ing .qty { white-space: nowrap; text-align: right; }
-.group { font-weight: 700; color: #1F3D2D; margin: 7px 0 2px; }
+.group { font-weight: 700; color: var(--sop-ink); margin: 7px 0 2px; }
 .steps { list-style: none; margin: 0; padding: 0; font-size: 11.5px; line-height: 1.45; }
 .steps li { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 6px; }
-.num { width: 18px; height: 18px; border-radius: 50%; background: #1F3D2D; color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-.sh { list-style: none; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #1F3D2D; margin: 8px 0 3px; }
-.bullets li.lh { list-style: none; margin-left: -15px; margin-top: 4px; font-weight: 700; text-transform: uppercase; color: #1F3D2D; }
+.num { width: 18px; height: 18px; border-radius: 50%; background: var(--sop-ink); color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.sh { list-style: none; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--sop-ink); margin: 8px 0 3px; }
+.bullets li.lh { list-style: none; margin-left: -15px; margin-top: 4px; font-weight: 700; text-transform: uppercase; color: var(--sop-ink); }
 .checks { list-style: none; margin: 0; padding: 0; font-size: 11px; line-height: 1.5; }
 .checks li { padding-left: 16px; position: relative; }
 .checks li::before { content: "\\2713"; position: absolute; left: 0; color: #C9A45C; font-weight: 700; }
 .notes { font-size: 11px; line-height: 1.5; white-space: pre-line; }
 
 footer {
-  margin-top: auto; background: #1F3D2D; color: #fff; border-radius: 10px; padding: 3mm 5mm;
+  margin-top: auto; background: var(--sop-ink); color: #fff; border-radius: 10px; padding: 3mm 5mm;
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 14px; font-size: 10px; font-weight: 500;
 }
 footer .doc { display: inline-flex; align-items: center; gap: 6px; }
-footer svg { width: 16px; height: 16px; color: #D4B572; }
-footer .brand { color: #D4B572; font-family: "Playfair Display", Georgia, serif; font-weight: 700; font-size: 13px; }
+footer svg { width: 16px; height: 16px; color: var(--sop-on-ink); }
+footer .brand { color: var(--sop-on-ink); font-family: "Playfair Display", Georgia, serif; font-weight: 700; font-size: 13px; }
 
-.cover { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; background: linear-gradient(135deg,#1F3D2D 0%,#2a5a3d 100%); }
+.cover { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; background: linear-gradient(135deg,var(--sop-ink) 0%,var(--sop-ink-2) 100%); }
 .cover .kicker { font-size: 13px; letter-spacing: 6px; color: #D4B572; font-weight: 700; text-transform: uppercase; margin-bottom: 24px; }
 .cover h1 { color: #fff; font-size: 56px; letter-spacing: 2px; }
 .cover .rule { width: 80px; height: 3px; background: #D4B572; margin: 16px auto; }
@@ -306,7 +307,9 @@ footer .brand { color: #D4B572; font-family: "Playfair Display", Georgia, serif;
 .toc h2 { font-size: 11px; letter-spacing: 3px; color: #D4B572; text-transform: uppercase; margin: 0 0 8px; }
 .toc h1 { font-size: 28px; margin: 0 0 24px; }
 .toc .row { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-bottom: 1px solid #E6E1DA; font-size: 14px; }
-.toc .row span:last-child { color: #999; font-size: 12px; }
+.toc .row { gap: 12px; }
+.toc .row span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toc .row span:last-child { flex-shrink: 0; color: #999; font-size: 12px; }
 
 @media print {
   body { background: #FAF8F5; }
@@ -344,8 +347,31 @@ const FIT_SCRIPT = `
       }
       document.body.removeChild(probe);
       sheet.style.setProperty("--fit", String(fit));
+      fit = settle(sheet, fit);
       sheet.setAttribute("data-fit", Math.round(needed) + "/" + Math.round(available));
     });
+  }
+  // The probe can't see everything the real page does (e.g. the Desserts card's
+  // photo is a % of the page height, so it measures as 0), so check the real
+  // sheet: while anything pokes out below its bottom edge, shrink a bit more.
+  function overflowOf(sheet) {
+    var limit = sheet.getBoundingClientRect().bottom - parseFloat(getComputedStyle(sheet).paddingBottom) + 0.5;
+    var worst = 0;
+    sheet.querySelectorAll(".inner, .inner *").forEach(function (el) {
+      var b = el.getBoundingClientRect();
+      if (b.height > 0 && b.bottom - limit > worst) worst = b.bottom - limit;
+    });
+    return worst;
+  }
+  function settle(sheet, fit) {
+    var page = sheet.clientHeight;
+    for (var i = 0; i < 12; i++) {
+      var over = overflowOf(sheet);
+      if (over <= 0) break;
+      fit = Math.floor(fit * (page / (page + over)) * 0.995 * 1000) / 1000;
+      sheet.style.setProperty("--fit", String(fit));
+    }
+    return fit;
   }
   function ready() {
     var imgs = Array.prototype.slice.call(document.images).map(function (img) {
@@ -358,6 +384,19 @@ const FIT_SCRIPT = `
   window.addEventListener("beforeprint", fitAll);
 })();
 `;
+
+// One A4 contents page holds 22 one-line rows; 20 leaves headroom.
+const TOC_ROWS_PER_PAGE = 20;
+
+/** Splits the contents list into A4 pages, keeping the running recipe number. */
+function tocPages(recipes: PrintRecipe[]): { r: PrintRecipe; n: number }[][] {
+  const pages: { r: PrintRecipe; n: number }[][] = [];
+  recipes.forEach((r, i) => {
+    if (i % TOC_ROWS_PER_PAGE === 0) pages.push([]);
+    pages[pages.length - 1].push({ r, n: i + 1 });
+  });
+  return pages.length ? pages : [[]];
+}
 
 export function buildRecipePrintDocument(opts: {
   title: string;
@@ -387,18 +426,23 @@ export function buildRecipePrintDocument(opts: {
   <p>${recipes.length} Recipe${recipes.length === 1 ? "" : "s"}</p>
   <small>Generated on ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</small>
 </section>
+${tocPages(recipes)
+  .map(
+    (page, p) => `
 <section class="sheet toc">
   <h2>Table of Contents</h2>
-  <h1>${esc(collection.categoryName)} Recipes</h1>
+  <h1>${esc(collection.categoryName)} Recipes${p > 0 ? " (contd.)" : ""}</h1>
   <div style="border-top:2px solid #D4B572">
-    ${recipes
+    ${page
       .map(
-        (r, i) =>
-          `<div class="row"><span><strong style="color:#1F3D2D">${i + 1}.</strong> ${esc(r.title)}</span><span>${esc(r.dishCode || "")} ${r.totalMinutes ? `&bull; ~${r.totalMinutes} min` : ""}</span></div>`,
+        ({ r, n }) =>
+          `<div class="row"><span><strong style="color:var(--sop-ink)">${n}.</strong> ${esc(r.title)}</span><span>${esc(r.dishCode || "")} ${r.totalMinutes ? `&bull; ~${r.totalMinutes} min` : ""}</span></div>`,
       )
       .join("")}
   </div>
-</section>`
+</section>`,
+  )
+  .join("")}`
     : "";
 
   return `<!DOCTYPE html>
@@ -409,10 +453,10 @@ export function buildRecipePrintDocument(opts: {
 <title>${esc(opts.title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Marcellus+SC&display=swap" rel="stylesheet">
 <style>${STYLES}${DESSERT_CSS}${COOKBOOK_CSS}</style>
 </head>
-<body>
+<body style="${sopPaletteStyle(brandName)}">
 ${front}
 ${recipes.map((r) => (isDessertStyle(opts.template ?? "classic", r.categorySlug) ? buildDessertSheet(r, brandName) : buildRecipeSheet(r, brandName))).join("")}
 <script>${FIT_SCRIPT}</script>
@@ -511,7 +555,7 @@ function buildAikoDocument(opts: Parameters<typeof buildRecipePrintDocument>[0])
 <link href="${AIKO_FONTS_HREF}" rel="stylesheet">
 <style>${STYLES}${AIKO_PRINT_CSS}${DIMSUM_CSS}${DRINK_CSS}${COOKBOOK_CSS}${AIKO_COOKBOOK_CSS}</style>
 </head>
-<body>
+<body style="${sopPaletteStyle(opts.brandName)}">
 ${cover}
 ${sheets}
 <script>${FIT_SCRIPT}</script>
