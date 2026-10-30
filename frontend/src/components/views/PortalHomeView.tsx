@@ -123,7 +123,7 @@ export async function PortalHomeView({ base = "", top }: { base?: string; top?: 
         </div>
       </section>
 
-      <footer className="border-t border-white/10 py-10 text-center text-sm text-brand-fg/50">
+      <footer className="mt-24 border-t border-white/10 pt-12 pb-16 text-center text-sm text-brand-fg/50">
         © {new Date().getFullYear()} Bookends Hospitality
       </footer>
       </PortalPageFade>

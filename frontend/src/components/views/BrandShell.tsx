@@ -13,7 +13,7 @@ export function BrandShell({ brand, base = "", children }: { brand: Brand; base?
     <div data-brand={brand.slug} style={cssVars as React.CSSProperties} className="flex min-h-screen flex-col print:bg-[#FAF8F5]!">
       <BrandHeader brand={brand} base={base} />
       <main className="flex-1">{children}</main>
-      <BrandFooter brand={brand} />
+      <BrandFooter />
     </div>
   );
 }
