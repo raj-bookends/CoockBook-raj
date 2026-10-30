@@ -1,7 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, useTransition, type ReactNode, type Ref } from "react";
+import { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState, useTransition, type ReactNode, type Ref } from "react";
 import { useForm, useFieldArray, useController, useWatch, type Control, type Resolver, type FieldErrors } from "react-hook-form";
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS as DndCSS } from "@dnd-kit/utilities";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { RecipeInputSchema, type RecipeInput, type RecipeFormValues } from "@/lib/schemas/recipe";
@@ -170,13 +173,52 @@ function Field({ path, label, error, className, children }: { path: string; labe
   );
 }
 
-function RowButtons({ index, count, onMove, onRemove, label }: { index: number; count: number; onMove: (from: number, to: number) => void; onRemove: () => void; label: string }) {
+function RowButtons({ handle, onRemove, label }: { handle: ReactNode; onRemove: () => void; label: string }) {
   return (
     <div className="flex shrink-0 items-center">
-      <button type="button" className={iconBtn} disabled={index === 0} onClick={() => onMove(index, index - 1)} aria-label={`Move ${label} up`} title="Move up">↑</button>
-      <button type="button" className={iconBtn} disabled={index === count - 1} onClick={() => onMove(index, index + 1)} aria-label={`Move ${label} down`} title="Move down">↓</button>
+      {handle}
       <button type="button" className={`${iconBtn} hover:!bg-red-50 hover:!text-red-600`} onClick={onRemove} aria-label={`Remove ${label}`} title="Remove">✕</button>
     </div>
+  );
+}
+
+/** Drag-to-reorder list: rows are SortableRow children, `ids` in display order. */
+function SortableList({ ids, onMove, children }: { ids: string[]; onMove: (from: number, to: number) => void; children: ReactNode }) {
+  const id = useId();
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (over && active.id !== over.id) onMove(ids.indexOf(String(active.id)), ids.indexOf(String(over.id)));
+  };
+  return (
+    <DndContext id={id} sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <SortableContext items={ids} strategy={verticalListSortingStrategy}>{children}</SortableContext>
+    </DndContext>
+  );
+}
+
+/** One draggable <li>; `children` receives the grip handle to place in the row. */
+function SortableRow({ id, edit, className, label, children }: { id: string; edit: string; className?: string; label: string; children: (handle: ReactNode) => ReactNode }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const handle = (
+    <button
+      type="button" ref={setActivatorNodeRef} {...attributes} {...listeners}
+      className={`${iconBtn} cursor-grab touch-none active:cursor-grabbing`}
+      aria-label={`Drag to reorder ${label}`} title="Drag to reorder"
+    >
+      ⠿
+    </button>
+  );
+  return (
+    <li
+      ref={setNodeRef} data-edit={edit}
+      className={`${className ?? ""} ${isDragging ? "relative z-10 bg-white shadow-lg" : ""}`}
+      style={{ transform: DndCSS.Translate.toString(transform), transition }}
+    >
+      {children(handle)}
+    </li>
   );
 }
 
@@ -214,9 +256,11 @@ function StringListEditor({
 
   return (
     <div data-edit={name} className={targetCls}>
+      <SortableList ids={items.map((_, i) => String(i))} onMove={move}>
       <ul className="space-y-1.5">
         {items.map((value, i) => (
-          <li key={i} data-edit={`${name}.${i}`} className={`flex items-center gap-1.5 ${targetCls}`}>
+          <SortableRow key={i} id={String(i)} edit={`${name}.${i}`} label={itemLabel} className={`flex items-center gap-1.5 ${targetCls}`}>
+            {(handle) => (<>
             <span className="w-5 shrink-0 text-right text-[11px] tabular-nums text-slate-400">{i + 1}</span>
             <input
               value={value}
@@ -232,10 +276,12 @@ function StringListEditor({
               }}
               className={inputCls}
             />
-            <RowButtons index={i} count={items.length} label={itemLabel} onMove={move} onRemove={() => set(items.filter((_, j) => j !== i))} />
-          </li>
+            <RowButtons handle={handle} label={itemLabel} onRemove={() => set(items.filter((_, j) => j !== i))} />
+            </>)}
+          </SortableRow>
         ))}
       </ul>
+      </SortableList>
       <AddButton onClick={() => insertAfter(items.length - 1)}>Add {itemLabel}</AddButton>
     </div>
   );
@@ -706,9 +752,11 @@ export function RecipeForm({
               <div className="mb-1 hidden grid-cols-[20px_1fr_72px_72px_84px] gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 sm:grid">
                 <span /><span>Ingredient</span><span>Qty</span><span>Unit</span><span />
               </div>
+              <SortableList ids={ingredientArray.fields.map((f) => f.id)} onMove={ingredientArray.move}>
               <ul className="space-y-1.5">
                 {ingredientArray.fields.map((field, i) => (
-                  <li key={field.id} data-edit={`ingredients.${i}`} className={targetCls}>
+                  <SortableRow key={field.id} id={field.id} edit={`ingredients.${i}`} label="ingredient" className={targetCls}>
+                    {(handle) => (<>
                     <div className="grid grid-cols-[20px_1fr_60px_60px] items-center gap-1.5 sm:grid-cols-[20px_1fr_72px_72px_84px]">
                       <span className="text-right text-[11px] tabular-nums text-slate-400">{i + 1}</span>
                       <div className="flex min-w-0 flex-col gap-1">
@@ -726,13 +774,15 @@ export function RecipeForm({
                         onKeyDown={(e) => { if (e.key === "Enter") addIngredient(i + 1); }}
                       />
                       <div className="col-span-4 flex justify-end sm:col-span-1">
-                        <RowButtons index={i} count={ingredientArray.fields.length} label="ingredient" onMove={ingredientArray.move} onRemove={() => ingredientArray.remove(i)} />
+                        <RowButtons handle={handle} label="ingredient" onRemove={() => ingredientArray.remove(i)} />
                       </div>
                     </div>
                     {ingErrors?.[i]?.name?.message && <p className="ml-7 mt-0.5 text-xs font-medium text-red-600">{ingErrors[i].name!.message}</p>}
-                  </li>
+                    </>)}
+                  </SortableRow>
                 ))}
               </ul>
+              </SortableList>
               {errors.ingredients?.message && <p className="mt-1 text-xs font-medium text-red-600">{errors.ingredients.message}</p>}
               <AddButton onClick={() => addIngredient()}>Add ingredient</AddButton>
             </div>
@@ -740,21 +790,25 @@ export function RecipeForm({
 
           <Section id="method" title="Method">
             <div data-edit="steps" className={targetCls}>
+              <SortableList ids={stepArray.fields.map((f) => f.id)} onMove={stepArray.move}>
               <ol className="space-y-2">
                 {stepArray.fields.map((field, i) => (
-                  <li key={field.id} data-edit={`steps.${i}`} className={targetCls}>
+                  <SortableRow key={field.id} id={field.id} edit={`steps.${i}`} label="step" className={targetCls}>
+                    {(handle) => (<>
                     <div className="flex items-start gap-2">
                       <span className="mt-1.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1F3D2D] text-[11px] font-bold text-white">{i + 1}</span>
                       <div className="flex min-w-0 flex-1 flex-col gap-1">
                         <input {...register(`steps.${i}.title` as const)} placeholder="Section heading (optional) — starts a new numbered section" className={`${inputCls} py-1 text-xs`} />
                         <textarea {...register(`steps.${i}.body` as const)} rows={2} className={inputCls} placeholder="Describe this step…" />
                       </div>
-                      <RowButtons index={i} count={stepArray.fields.length} label="step" onMove={stepArray.move} onRemove={() => stepArray.remove(i)} />
+                      <RowButtons handle={handle} label="step" onRemove={() => stepArray.remove(i)} />
                     </div>
                     {stepErrors?.[i]?.body?.message && <p className="ml-8 mt-0.5 text-xs font-medium text-red-600">{stepErrors[i].body!.message}</p>}
-                  </li>
+                    </>)}
+                  </SortableRow>
                 ))}
               </ol>
+              </SortableList>
               {errors.steps?.message && <p className="mt-1 text-xs font-medium text-red-600">{errors.steps.message}</p>}
               <AddButton onClick={() => addStep()}>Add step</AddButton>
             </div>
